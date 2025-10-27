@@ -4,7 +4,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 from email.mime.image import MIMEImage
-
 class email_send:
     def __init__(self, receiver_email):
         email_str = receiver_email
