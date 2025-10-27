@@ -52,7 +52,6 @@ func postHandle(c *gin.Context) {
 
 		cmd := exec.Command("D:/Multi-Tech-Project/.venv/Scripts/python.exe", "D:/Multi-Tech-Project/StockX_crawl/productPrice_main.py", reqBody.ProductId, reqBody.UserName, hashHex)
 
-		// 创建管道
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatalf("无法创建 stdout 管道: %v", err)
@@ -62,12 +61,9 @@ func postHandle(c *gin.Context) {
 			log.Fatalf("无法创建 stderr 管道: %v", err)
 		}
 
-		// 启动命令
 		if err := cmd.Start(); err != nil {
 			log.Fatalf("启动 Python 脚本失败: %v", err)
 		}
-
-		// 使用 goroutine 实时读取 stdout
 		go func() {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
@@ -76,7 +72,6 @@ func postHandle(c *gin.Context) {
 			}
 		}()
 
-		// 使用 goroutine 实时读取 stderr
 		go func() {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
@@ -85,7 +80,7 @@ func postHandle(c *gin.Context) {
 			}
 		}()
 
-		// 等待命令结束
+
 		err = cmd.Wait()
 		if err != nil {
 			log.Printf("Python 脚本执行失败: %v", err)
