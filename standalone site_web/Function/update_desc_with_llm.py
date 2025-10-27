@@ -24,7 +24,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage
 from tortoise import connections
 import re
-
 class PostMeta(Model):
     meta_id = fields.BigIntField(primary_key=True)
     post_id = fields.BigIntField()
