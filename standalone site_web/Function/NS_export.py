@@ -5,7 +5,6 @@ from aioconsole import aprint
 import pandas
 import re
 
-
 class Products_Export:
     def __init__(self):
         self.sku = ''
