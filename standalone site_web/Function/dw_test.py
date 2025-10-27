@@ -16,7 +16,6 @@ import aiomysql
 import aiofiles
 import aiocsv
 import aiopandas
-
 class api_handle:
     def __init__(self ,query_sku:str):
         ua = fake_useragent.UserAgent()
