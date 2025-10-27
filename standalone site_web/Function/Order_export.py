@@ -39,7 +39,6 @@ class order_out:
         self.n = 0
         self.final_payout_total = 0
         self.final_payout_total_list = []
-
     async def get_all_order_info(self):
         async with aiohttp.ClientSession() as session:
             async with session.get(url=self.get_all_order, headers=self.headers) as response:
