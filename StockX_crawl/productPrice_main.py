@@ -2,7 +2,6 @@ import datetime
 from tortoise import Tortoise
 import asyncio
 from aioconsole import aprint
-
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import sys
