@@ -1557,8 +1557,7 @@ def get_variation_price(variation_id,sku,single_sku_variations):
             "https://gateway.stockx.com/api/graphql",
             headers=HEADERS,
             json=JSON_DATA,
-            proxies=proxy_ip_dict,
-            # impersonate="chrome120",  # 模拟现代浏览器指纹（绕过部分 bot 检测）
+            proxies=proxy_ip_dict
             timeout=15
         )
         print(f"✅ Status: {resp.status_code}")
