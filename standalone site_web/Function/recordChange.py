@@ -10,7 +10,6 @@ import tenacity
 import aiofiles
 import plotly.graph_objects as go
 
-
 class api_ops:
     def __init__(self):
         UA = fake_useragent.UserAgent()
