@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools Site</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      color: #333;
+      min-height: 100vh;
+      padding: 15px; /* 减小页面整体内边距 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 100%; /* 移除固定最大宽度，让容器撑满 */
+      background: white;
+      border-radius: 12px; /* 稍微减小圆角 */
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* 稍微减小阴影 */
+      overflow: hidden;
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    header {
+      background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+      color: white;
+      padding: 20px 15px; /* 减小头部内边距 */
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      transform: rotate(30deg);
+    }
+    h1 {
+      font-size: 1.8rem; /* 减小主标题字体大小 */
+      margin-bottom: 8px; /* 减小标题间距 */
+      position: relative;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 1rem; /* 减小副标题字体大小 */
+      opacity: 0.9;
+      font-weight: 300;
+    }
+    .sections-container {
+      padding: 20px 15px; /* 减小内容区外边距 */
+    }
+    .section {
+      background: #ffffff;
+      border-radius: 10px; /* 减小圆角 */
+      padding: 20px 15px; /* 减小内边距 */
+      margin-bottom: 20px; /* 减小底部外边距 */
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05); /* 减小阴影 */
+      border: 1px solid #eee;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+    .section:hover {
+      transform: translateY(-3px); /* 稍微减小悬停上移距离 */
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* 稍微减小悬停阴影 */
+    }
+    .section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px; /* 稍微减小左侧装饰条宽度 */
+      height: 100%;
+      background: linear-gradient(to bottom, #4b6cb7, #182848);
+    }
+    .section-title {
+      font-size: 1.25rem; /* 减小区域标题字体大小 */
+      font-weight: 600;
+      margin-bottom: 15px; /* 减小标题底部间距 */
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+    }
+    .section-title i {
+      margin-right: 10px; /* 减小图标右边距 */
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.4rem; /* 减小图标大小 */
+    }
+    .input-group {
+      margin: 15px 0; /* 减小输入组间距 */
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px; /* 减小标签底部间距 */
+      color: #34495e;
+      font-size: 0.95rem; /* 可选：稍微减小标签字体 */
+    }
+    textarea, select {
+      width: 100%;
+      padding: 12px; /* 减小输入框内边距 */
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 15px; /* 减小字体大小 */
+      font-family: inherit;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+    }
+    textarea:focus, select:focus {
+      outline: none;
+      border-color: #4b6cb7;
+      box-shadow: 0 0 0 2px rgba(75, 108, 183, 0.2); /* 减小焦点阴影大小 */
+      background: white;
+    }
+    textarea {
+      min-height: 90px; /* 减小最小高度 */
+      resize: vertical;
+    }
+    /* 新增：美化公式因子的输入框 */
+    #update_db_price_text, #update_dw_price_text {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+    }
+    #update_db_price_text:focus, #update_dw_price_text:focus {
+      outline: none;
+      border-color: #4b6cb7;
+      box-shadow: 0 0 0 2px rgba(75, 108, 183, 0.2);
+      background: white;
+    }
+
+    /* --- 优化单选框样式 START --- */
+    .radio-group {
+      display: flex;
+      gap: 20px; /* 调整两个选项之间的间距 */
+      margin-top: 10px; /* 与上面的元素保持间距 */
+    }
+
+    /* 隐藏原始的单选框 */
+    .radio-group input[type="radio"] {
+      display: none;
+    }
+
+    /* 创建自定义的单选框样式 */
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 500;
+      color: #34495e;
+      font-size: 0.95rem;
+      margin-bottom: 0; /* 重置label的margin-bottom */
+    }
+
+    .radio-group label::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #e1e8ed;
+      margin-right: 8px;
+      transition: all 0.3s ease;
+    }
+
+    /* 选中状态的样式 */
+    .radio-group input[type="radio"]:checked + label::before {
+      background-color: #4b6cb7;
+      border-color: #4b6cb7;
+    }
+
+    /* 在选中状态的圆圈内添加一个白色小圆点 */
+    .radio-group input[type="radio"]:checked + label::after {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: white;
+      position: relative;
+      top: 4px; /* 调整小圆点的垂直位置 */
+      left: 4px; /* 调整小圆点的水平位置 */
+    }
+
+    /* 悬停效果 */
+    .radio-group label:hover::before {
+      border-color: #4b6cb7;
+    }
+    /* --- 优化单选框样式 END --- */
+
+    /* 保持原有按钮样式不变 */
+    button {
+      background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px; /* 减小按钮内边距 */
+      font-size: 15px; /* 减小按钮字体大小 */
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      box-shadow: 0 3px 8px rgba(75, 108, 183, 0.3); /* 减小按钮阴影 */
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px); /* 减小按钮悬停上移距离 */
+      box-shadow: 0 5px 12px rgba(75, 108, 183, 0.4); /* 减小按钮悬停阴影 */
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button i {
+      margin-right: 8px; /* 减小按钮图标右边距 */
+      font-size: 16px; /* 减小按钮图标大小 */
+    }
+    #orderInput {
+      margin-top: 15px; /* 减小顶部间距 */
+      animation: slideDown 0.4s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .notification {
+      position: fixed;
+      top: 15px; /* 调整通知位置 */
+      right: 15px; /* 调整通知位置 */
+      padding: 12px 20px; /* 减小通知内边距 */
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem; /* 减小通知字体大小 */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* 减小通知阴影 */
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      animation: slideInRight 0.4s ease, fadeOut 0.5s ease 2.5s forwards;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; transform: translateX(100%); }
+    }
+    .success {
+      background: linear-gradient(135deg, #00b09b, #96c93d);
+    }
+    .error {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    }
+    .notification i {
+      margin-right: 8px; /* 减小通知图标右边距 */
+      font-size: 18px; /* 减小通知图标大小 */
+    }
+    footer {
+      text-align: center;
+      padding: 15px; /* 减小页脚内边距 */
+      color: #7f8c8d;
+      font-size: 0.85rem; /* 减小页脚字体大小 */
+      border-top: 1px solid #eee;
+    }
+    /* 针对更小屏幕的优化 */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        border-radius: 10px;
+      }
+      header {
+        padding: 15px 10px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .subtitle {
+        font-size: 0.9rem;
+      }
+      .sections-container {
+        padding: 15px 10px;
+      }
+      .section {
+        padding: 15px 12px;
+        margin-bottom: 15px;
+      }
+      .section-title {
+        font-size: 1.15rem;
+      }
+      .input-group {
+        margin: 12px 0;
+      }
+      label {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+      }
+      textarea, select, #update_db_price_text, #update_dw_price_text {
+        padding: 10px;
+        font-size: 14px;
+      }
+      /* 适配小屏幕下的单选框 */
+      .radio-group {
+        gap: 15px;
+      }
+      .radio-group label::before {
+        width: 16px;
+        height: 16px;
+      }
+      .radio-group input[type="radio"]:checked + label::after {
+        width: 7px;
+        height: 7px;
+        top: 3px;
+        left: 3px;
+      }
+      button {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+      .notification {
+        top: 10px;
+        right: 10px;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+      }
+      footer {
+        padding: 12px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-cogs"></i>Tools Box</h1>
+      <p class="subtitle">Version 2.5.0</p>
+    </header>
+    <div class="sections-container">
+      <!-- NS产品导出区域 -->
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-box-open"></i>
+          NS产品数据导出
+        </div>
+        <div class="input-group">
+          <label for="t1">请输入要导出的SKU：</label>
+          <textarea
+            id="t1"
+            placeholder="请以英文逗号[,]分隔不同的SKU，例如：SKU001,SKU002,SKU003"
+          ></textarea>
+        </div>
+        <button id="b1">
+          <i class="fas fa-file-export"></i> 导出NS产品数据
+        </button>
+      </div>
+      <!-- 订单导出区域 -->
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-receipt"></i>
+          独立站订单导出
+        </div>
+        <div class="input-group">
+          <label for="s1">请选择导出范围:</label>
+          <select id="s1">
+            <option value="1">导出全部订单</option>
+            <option value="2">导出单笔指定订单</option>
+            <option value="3">导出多笔指定订单</option>
+          </select>
+        </div>
+        <div id="orderInput">
+          <div class="input-group">
+            <label for="t3">请输入要导出的订单号：</label>
+            <textarea
+              id="t3"
+              placeholder="请以英文逗号[,]分隔不同的订单号，例如：ORD001,ORD002,ORD003"
+            ></textarea>
+          </div>
+        </div>
+        <button id="b2">
+          <i class="fas fa-download"></i> 导出独立站订单
+        </button>
+      </div>
+      <!-- 价格更新区域 -->
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-tags"></i>
+          独立站产品价格更新
+        </div>
+        <div class="input-group">
+          <label for="s2">请选择更新方式:</label>
+          <select id="s2">
+            <option value="1">全量更新</option>
+            <option value="2">指定更新</option>
+          </select>
+          <div id="update_text">
+            <label for="t4">请输入需要改价的SKU：</label>
+            <textarea id="t4" placeholder="请以英文逗号[,]分隔不同的SKU，例如：SKU001,SKU002,SKU003"></textarea>
+          </div>
+        </div>
+        <div class="input-group"> <!-- 为输入框组添加 input-group 类 -->
+          <label>修改数据库产品价格的公式因子</label>
+          <input id="update_db_price_text" placeholder="请输入浮点数,默认0.88">
+        </div>
+        <div class="input-group"> <!-- 为输入框组添加 input-group 类 -->
+          <label>修改得物产品价格的公式因子</label>
+          <input id="update_dw_price_text" placeholder="请输入浮点数,默认0.88">
+        </div>
+        <!-- 促销抉择 - 优化后 -->
+        <div class="input-group">
+          <label>促销设置：</label>
+          <div class="radio-group">
+            <input type="radio" id="radio_true" value="true" name="sale">
+            <label for="radio_true">打促销</label>
+
+            <input type="radio" id="radio_false" value="false" name="sale" checked>
+            <label for="radio_false">不打促销</label>
+          </div>
+        </div>
+        <button id="b3">
+          <i class="fas fa-sync-alt"></i> 执行价格更新
+        </button>
+      </div>
+            <!-- Email批量发送区域 -->
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-envelope"></i>
+          Email批量发送
+        </div>
+        <div class="input-group">
+          <label for="customer_list">请输入客户邮箱：</label>
+          <textarea id="customer_list" placeholder="请以英文逗号[,]分隔不同的邮箱，例如：user1@example.com,user2@example.com"></textarea>
+        </div>
+        <button id="send">
+          <i class="fas fa-paper-plane"></i> 发送邮件
+        </button>
+      </div>
+    </div>
+    <footer>
+      <p>© 2025 Tools Site | Make in China</p>
+    </footer>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    $(function(){
+      function showNotification(message, isSuccess = true) {
+        const notificationClass = isSuccess ? 'success' : 'error';
+        const iconClass = isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle';
+        const notification = $(`
+          <div class="notification ${notificationClass}">
+            <i class="fas ${iconClass}"></i>
+            <span>${message}</span>
+          </div>
+        `);
+        $('body').append(notification);
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+      //Email批量发送功能
+      $('#send').click(function(){
+        let customer_list = $('#customer_list').val()
+        $.ajax({
+          url:"/post_email_send",
+          method:'post',
+          data: JSON.stringify({'receiver_email':customer_list,'msg':'请求发送'}),
+          contentType:'application/json',
+          success:function(json_data){
+            data = JSON.parse(json_data)
+            msg = data['msg']
+            console.log(msg)
+            showNotification('邮件发送成功')
+          }
+        })
+      })
+      // NS产品导出功能
+      $('#b1').click(function (){
+        let t1 = $('#t1').val();
+        if (!t1.trim()) {
+          showNotification('请输入SKU', false);
+          return;
+        }
+        $.ajax({
+          url: 'http://192.168.0.18:8080/get_NS_Export',
+          method: 'get',
+          data: {
+            sku: t1
+          },
+          success: function(data){
+            let link = document.createElement('a');
+            link.href = `http://192.168.0.18:8080/get_NS_Export?sku=${encodeURIComponent(t1)}`;
+            link.target = '_blank';
+            link.download = 'NS产品查询结果.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('NS产品数据导出成功！');
+          },
+          error: function(xhr, status, error) {
+            showNotification('导出失败: ' + error, false);
+          }
+        });
+      });
+      // 订单导出功能
+      $('#b2').click(function(){
+        let t3 = $('#t3').val();
+        let s1 = $('#s1').val();
+        let data = {'order_type': s1};
+        if (s1 === '2' || s1 === '3') {
+          if (!t3.trim()) {
+            showNotification('请输入订单号', false);
+            return;
+          }
+          data['order_id'] = t3;
+        }
+        $.ajax({
+          url: 'http://192.168.0.18:8080/get_orders_export',
+          method: 'get',
+          data: data,
+          success: function(data){
+            let link = document.createElement('a');
+            if (s1 === '1') {
+              link.href = 'http://192.168.0.18:8080/get_orders_export?order_type=1';
+            } else {
+              link.href = `http://192.168.0.18:8080/get_orders_export?order_type=${s1}&order_id=${encodeURIComponent(t3)}`;
+            }
+            link.target = '_blank';
+            link.download = '订单查询结果.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('订单数据导出成功！');
+          },
+          error: function(xhr, status, error) {
+            showNotification('导出失败: ' + error, false);
+          }
+        });
+      });
+      // 价格更新功能
+      $('#b3').click(function (){
+        let t4 = $('#t4').val();
+        let s2 = $('#s2').val();
+        let update_db_price = $('#update_db_price_text').val();
+        let update_dw_price = $('#update_dw_price_text').val();
+        let selected_value = $('input[name="sale"]:checked').val();
+        let  data_dict = {'type': s2,skus: t4,'flag': selected_value};
+        if (update_db_price != ''){ data_dict['my_price_factor'] = update_db_price;
+        }
+        if (update_dw_price != ''){ data_dict['dw_price_factor'] = update_dw_price;
+        }
+        if (s2 === '2') {
+          if (!t4.trim()) {
+            showNotification('请输入SKU', false);
+            return;
+          }
+        }
+        $.ajax({
+          url: '/post_update',
+          method: 'post',
+          data: JSON.stringify(data_dict),
+          contentType: 'application/json',
+          success: function(data){
+            $('#t4').val('价格更新已完成');
+            setTimeout(function() {
+              $('#t4').val('');
+            }, 5000);
+            showNotification('产品价格更新成功！');
+          },
+          error: function(xhr, status, error) {
+            showNotification('更新失败: ' + error, false);
+          }
+        });
+      });
+    });
+    // 订单输入框显示控制
+    document.getElementById('s1').addEventListener('change', function() {
+      const orderInput = document.getElementById('orderInput');
+      if (this.value === '2' || this.value === '3') {
+        orderInput.style.display = 'block';
+      } else {
+        orderInput.style.display = 'none';
+      }
+    });
+    // 初始化隐藏订单输入框
+    document.getElementById('orderInput').style.display = 'none';
+    // 产品更新输入框显示控制
+    document.getElementById('s2').addEventListener('change', function() {
+      const updateText = document.getElementById('update_text');
+      if (this.value === '2') {
+        updateText.style.display = 'block';
+      } else {
+        updateText.style.display = 'none';
+      }
+    });
+    // 初始化隐藏产品更新输入框
+    document.getElementById('update_text').style.display = 'none';
+  </script>
+</body>
+</html>

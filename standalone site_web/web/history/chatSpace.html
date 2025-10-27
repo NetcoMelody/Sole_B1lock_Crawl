@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatspace Lightweight</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js  "></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js  "></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css  ">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        #ws-client {
+            width: 100%;
+            max-width: 1300px;
+            height: 700px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 22px;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            overflow-y: auto;
+            animation: fadeInLeft 0.5s ease-out;
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .user-item:hover:not(.disabled)::before {
+            left: 100%;
+        }
+
+        .user-item:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-item.disabled {
+            background: rgba(128, 128, 128, 0.2);
+            cursor: not-allowed;
+            color: #ccc;
+        }
+
+        .user-item i {
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .message-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-container {
+            flex: 1;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            list-style: none;
+        }
+
+        /* 消息容器 - 控制左右对齐 */
+        .message-wrapper {
+            display: flex;
+            margin-bottom: 12px;
+            max-width: 100%;
+            animation: messageAppear 0.3s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 本端消息 - 左对齐 */
+        .message-wrapper.local {
+            justify-content: flex-start;
+        }
+
+        /* 远端消息 - 右对齐 */
+        .message-wrapper.remote {
+            justify-content: flex-end;
+        }
+
+        /* 消息气泡样式 */
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            color: white;
+            word-wrap: break-word;
+            animation: fadeIn 0.2s ease;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .message-bubble:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 本端消息气泡 */
+        .message-bubble.local {
+            background: linear-gradient(135deg, #4facfe 0%, #735093 100%);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* 远端消息气泡 */
+        .message-bubble.remote {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* 系统消息 */
+        .message-bubble.system {
+            background: rgba(255, 255, 255, 0.2);
+            text-align: center;
+            max-width: 100%;
+            margin: 0 auto;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-bubble a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+
+        .message-bubble a:hover {
+            text-decoration: underline;
+        }
+
+        .message-header {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-area {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-button {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .file-button:hover::before {
+            left: 100%;
+        }
+
+        .file-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .send-button {
+            padding: 10px 18px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .send-button:hover::before {
+            left: 100%;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 12px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            transition: all 0.3s ease;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.online {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            box-shadow: 0 0 8px #4CAF50;
+        }
+
+        .status-dot.offline {
+            background: linear-gradient(45deg, #9E9E9E, #607D8B);
+            animation: none;
+        }
+
+        .status-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .status-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .status-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #9E9E9E, #607D8B);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .status-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .status-slider {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+
+        input:checked + .status-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* 文件名显示样式 */
+        .file-name-display {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .file-name-display i {
+            color: #4fc3f7;
+        }
+
+        .clear-file-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+        }
+
+        .clear-file-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #ws-client {
+                height: 90vh;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+        }
+
+        /* 添加闪烁动画 */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .blinking {
+            animation: blink 1s infinite;
+        }
+
+        /* Footer样式 */
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .footer-link:hover {
+            color: white;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="ws-client">
+    <div class="header">
+        <h1><i class="fas fa-comments"></i>Chatspace Lightweight</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-title">
+                <i class="fas fa-users"></i>
+                User online
+            </div>
+            <ul class="user-list">
+                <li
+                    v-for="(item,index) in names"
+                    :key="item"
+                    @click="item !== name && handleClick(item,index)"
+                    :class="{ 'user-item': true}"
+                >
+                    <i class="fas fa-user-circle"></i>
+                    {{item}}
+                </li>
+            </ul>
+        </div>
+
+        <div class="chat-container">
+            <!-- 群聊消息容器 -->
+            <div
+                ref="groupChatContainer"
+                class="message-container"
+                v-show="groupChat"
+            >
+                <ul class="messages-list" ref="groupMessagesList">
+                    <li v-for="(item,index) in messages" :key="index">
+                        <div
+                            class="message-wrapper"
+                            :class="{
+                                'local': item.username === name || item.type === 'local',
+                                'remote': item.username !== name && item.type !== 'local'
+                            }"
+                        >
+                            <div
+                                class="message-bubble"
+                                :class="{
+                                    'local': item.username === name || item.type === 'local',
+                                    'remote': item.username !== name && item.type !== 'local',
+                                    'system': item.type === 'local'
+                                }"
+                            >
+                                <div class="message-header" v-if="item.type !== 'local'">
+                                    {{ item.username }}
+                                </div>
+                                <div class="message-content">
+                                    <span v-if="item.fileUrl">
+                                        <i class="fas fa-file"></i>
+                                        <a :href="item.fileUrl" target="_blank">{{item.message}}</a>
+                                    </span>
+                                    <span v-else>
+                                        <i v-if="item.type === 'local'" class="fas fa-info-circle"></i>
+                                        <i v-else-if="item.type === 'public'" class="fas fa-comment"></i>
+                                        <i v-else class="fas fa-envelope"></i>
+                                        {{item.message}}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 私聊消息容器 -->
+            <div
+                v-for="(username,index) in names"
+                :ref="el => setPrivateChatRef(el, username)"
+                v-show="showStates[username]"
+                :key="username"
+                class="message-container"
+            >
+                <ul class="messages-list" :ref="el => setPrivateMessagesListRef(el, username)">
+                    <li v-for="(item,index) in privateMessages[username]" :key="index">
+                        <div
+                            class="message-wrapper"
+                            :class="{
+                                'local': item.username === name,
+                                'remote': item.username !== name
+                            }"
+                        >
+                            <div
+                                class="message-bubble"
+                                :class="{
+                                    'local': item.username === name,
+                                    'remote': item.username !== name
+                                }"
+                            >
+                                <div class="message-header">
+                                    {{ item.username }}
+                                </div>
+                                <div class="message-content">
+                                    <span v-if="item.fileUrl">
+                                        <i class="fas fa-file"></i>
+                                        <a :href="item.fileUrl" target="_blank">{{item.message}}</a>
+                                    </span>
+                                    <span v-else>
+                                        <i class="fas fa-envelope"></i>
+                                        {{item.message}}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <input
+                        v-model="message"
+                        class="message-input"
+                        placeholder="Inputting..."
+                        @keyup.enter="meClick"
+                    >
+                    <div class="file-input-wrapper">
+                        <div class="file-button">
+                            <i class="fas fa-paperclip"></i>
+                            File Upload
+                        </div>
+                        <input type="file" @change="handleFileSelect" ref="fileInput">
+                    </div>
+                    <button @click="sendMessage" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                        Send to
+                    </button>
+                </div>
+
+                <!-- 添加文件名显示区域 -->
+                <div v-if="selectedFileName" class="file-name-display">
+                    <i class="fas fa-file"></i>
+                    <span>Selected File: {{ selectedFileName }}</span>
+                    <button @click="clearSelectedFile" class="clear-file-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="status-area">
+                    <div class="status-indicator">
+                        <span class="status-dot" :class="keepAlive ? 'online' : 'offline'"></span>
+                        <span class="status-text">{{ keepAlive ? 'Online' : 'Offline' }}</span>
+                    </div>
+                    <label class="status-toggle">
+                        <input type="checkbox" v-model="keepAlive" class="status-checkbox" checked>
+                        <span class="status-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 添加Footer -->
+            <div class="footer">
+                <div class="footer-content">
+                    <div class="footer-text">
+                        <i class="fas fa-copyright"></i>
+                        <span>2025 Chatspace Lightweight | Made in China </span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-shield-alt"></i>
+                            Privacy
+                        </a>
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-file-contract"></i>
+                            Terms
+                        </a>
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-question-circle"></i>
+                            Help
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const {createApp,onMounted,ref,onUnmounted,nextTick,watch} = Vue
+    const app = createApp({
+        setup(){
+            const flag = ref(false)
+            const name = ref('')
+            const names = ref([])
+            const messages = ref([])
+            const message = ref('')
+            const selected_user = ref('')
+            const currentFileUrl = ref('')
+            const fileName = ref('')
+            const privateMessages = ref({})
+            let socket = null
+            const meClick = () => {
+                sendMessage()
+            }
+            const fileInput = ref(null)
+            const fileUrl = ref('')
+            const keepAlive = ref(true)
+            let KeepAliveTimer = ref(null)
+            const showStates = ref({})
+            const groupChat = ref(true)
+            const selectedFileName = ref('') // 添加这个新变量来存储选中的文件名
+
+            // 添加 refs 用于获取 DOM 元素
+            const groupChatContainer = ref(null)
+            const groupMessagesList = ref(null)
+            const privateChatContainers = ref({})
+            const privateMessagesLists = ref({})
+
+            // 设置私聊容器的 ref
+            const setPrivateChatRef = (el, username) => {
+                if (el) {
+                    privateChatContainers.value[username] = el
+                }
+            }
+
+            // 设置私聊消息列表的 ref
+            const setPrivateMessagesListRef = (el, username) => {
+                if (el) {
+                    privateMessagesLists.value[username] = el
+                }
+            }
+
+            // 滚动到指定容器底部
+            const scrollToBottom = (container) => {
+                if (container) {
+                    nextTick(() => {
+                        container.scrollTop = container.scrollHeight
+                    })
+                }
+            }
+
+            // 滚动群聊到底部
+            const scrollToGroupChatBottom = () => {
+                scrollToBottom(groupMessagesList.value)
+            }
+
+            // 滚动私聊到底部
+            const scrollToPrivateChatBottom = (username) => {
+                const container = privateMessagesLists.value[username]
+                scrollToBottom(container)
+            }
+
+            const handleFileSelect = async(event) => {
+                const file = event.target.files[0]
+                if (file) {
+                    // 显示选中的文件名
+                    selectedFileName.value = file.name
+
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    console.log([...formData.keys()])
+                    const response = await fetch("/transfer_url", {
+                        method: 'POST',
+                        body: formData
+                    })
+                    const result = await response.json()
+                    if(result.success){
+                        const fileUrl = result.fileUrl
+                        console.log('文件URL:',fileUrl)
+                        currentFileUrl.value = fileUrl
+                        fileName.value = result.filename
+                    }
+                }
+            }
+
+            // 添加清除选中文件的函数
+            const clearSelectedFile = () => {
+                selectedFileName.value = ''
+                currentFileUrl.value = ''
+                fileName.value = ''
+                if (fileInput.value) {
+                    fileInput.value.value = ''
+                }
+            }
+
+            const startKeepAlive = ()=> {
+                if (keepAlive.value && socket && socket.readyState === WebSocket.OPEN){
+                    socket.send(JSON.stringify({
+                        type:'keepAlive',
+                        message:'request',
+                        username:name.value
+                    }))
+                }
+            }
+
+            // 监听消息变化，自动滚动到底部
+            watch(messages, () => {
+                scrollToGroupChatBottom()
+            }, { deep: true })
+
+            watch(privateMessages, () => {
+                // 为所有私聊用户滚动到底部
+                Object.keys(privateMessages.value).forEach(username => {
+                    if (showStates.value[username]) {
+                        scrollToPrivateChatBottom(username)
+                    }
+                })
+            }, { deep: true })
+
+            onMounted(() => {
+                socket = new WebSocket('ws://192.168.0.18:8080/ws')
+                socket.onopen = () => {
+                    messages.value.push({type:'local',username:'系统',message:'Connected to Server',remote:'self'})
+                }
+                KeepAliveTimer = setInterval(startKeepAlive,30000)
+
+                socket.onmessage = (recvJson) => {
+                    const recvData = JSON.parse(recvJson.data)
+                    if (recvData.message==='用户列表同步'){
+                        showStates.value = {}
+                        const nameList = ref(recvData.username)
+                        names.value = nameList.value
+                        const listLen = names.value.length
+                        for (let i = 0; i<listLen;i++){
+                            showStates.value[nameList.value[i]] = false
+                        }
+                        return
+                    }
+                    if (recvData.type === 'keepAlive' && recvData.username === 'server') {
+                        console.log('收到心跳响应');
+                        return;
+                    }
+                    if(recvData.type === 'unicast'){
+                        if (!privateMessages.value[recvData.username]) {
+                            privateMessages.value[recvData.username] = [] // 创建空数组
+                        }
+                        privateMessages.value[recvData.username].push(recvData)
+                        return;
+                    }
+                    if (recvData.type === 'public'){
+                        messages.value.push(recvData)
+                    } else {
+                        messages.value.push(recvData)
+                    }
+                }
+
+                socket.onclose = () => {
+                    messages.value.push({type:'local',username:'系统',message:'[错误]连接出错',remote:'self'})
+
+                    if (KeepAliveTimer) {
+                        clearInterval(KeepAliveTimer)
+                    }
+                }
+            })
+
+            const privateChat = (username) => {
+                selected_user.value = username
+            }
+
+            const handleClick = (item) => {
+                privateChat(item)
+                groupChat.value = false
+                if (showStates.value[item] === false){
+                    for (let key in showStates.value){
+                        showStates.value[key] = false
+                    }
+                    showStates.value[item] = true
+                } else {
+                    for (let key in showStates.value){
+                        showStates.value[key] = false
+                    }
+                    groupChat.value = true
+                }
+            }
+
+            const sendMessage = () => {
+                if(socket.readyState !== socket.OPEN){
+                    messages.value.push({type:'local',username:'系统',message:'报错：'+'连接未建立',remote:'self'})
+                    return
+                }
+
+                if (!flag.value){
+                    // 首次设置用户名
+                    name.value = message.value
+                    socket.send(JSON.stringify({type:'local',username:name.value,message:'请求注册',remote:'server'}))
+                    socket.send(JSON.stringify({type:'public',username:name.value,message:`恭喜用户${name.value}注册成功`,remote:'self'}))
+                    messages.value.push({type:'public',username:name.value,message:`恭喜用户${name.value}注册成功`,remote:'self'})
+                    message.value = ''
+                    flag.value = true
+                }
+                else if(currentFileUrl.value){
+                    // 发送文件
+                    if (selected_user.value){
+                        // 私聊文件
+                        const messageData = {
+                            type:'unicast',
+                            username:name.value,
+                            message:fileName.value,
+                            fileUrl:currentFileUrl.value,
+                            remote:selected_user.value
+                        }
+                        messageData.message = fileName.value
+                        socket.send(JSON.stringify(messageData))
+                        if (!privateMessages.value[messageData.remote]) {
+                            privateMessages.value[messageData.remote] = [] // 创建空数组
+                        }
+                        privateMessages.value[messageData.remote].push(messageData)
+                    }
+                    else{
+                        // 群聊文件
+                        const messageData = {
+                            type:'public',
+                            username:name.value,
+                            message:fileName.value,
+                            fileUrl:currentFileUrl.value,
+                            remote:'all'
+                        }
+                        messageData.message = fileName.value
+                        socket.send(JSON.stringify(messageData))
+                        messages.value.push(messageData)
+                    }
+                    // 发送文件后清除文件相关信息
+                    clearSelectedFile()
+                }
+                else if (message.value.trim() !== ''){
+                    // 发送文本消息
+                    if (selected_user.value){
+                        // 私聊
+                        const messageData = {
+                            type:'unicast',
+                            username:name.value,
+                            message:message.value,
+                            remote:selected_user.value
+                        }
+                        messageData.message = message.value
+                        socket.send(JSON.stringify(messageData))
+                        if (!privateMessages.value[messageData.remote]) {
+                            privateMessages.value[messageData.remote] = [] // 创建空数组
+                        }
+                        privateMessages.value[messageData.remote].push(messageData)
+                    }
+                    else{
+                        // 群聊
+                        const messageData = {
+                            type:'public',
+                            username:name.value,
+                            message:message.value,
+                            remote:'all'
+                        }
+                        messageData.message = message.value
+                        socket.send(JSON.stringify(messageData))
+                        messages.value.push(messageData)
+                    }
+                    message.value = ''
+                }
+            }
+
+            onUnmounted (() => {
+                if (socket) {socket.close()}
+                if (KeepAliveTimer) {
+                    clearInterval(KeepAliveTimer)
+                }
+            })
+
+            return{
+                messages,
+                message,
+                sendMessage,
+                name,
+                flag,
+                names,
+                meClick,
+                privateChat,
+                selected_user,
+                fileInput,
+                fileUrl,
+                handleFileSelect,
+                currentFileUrl,
+                fileName,
+                showStates,
+                groupChat,
+                handleClick,
+                privateMessages,
+                // 返回 refs
+                groupChatContainer,
+                groupMessagesList,
+                setPrivateChatRef,
+                setPrivateMessagesListRef,
+                // 返回方法
+                scrollToGroupChatBottom,
+                scrollToPrivateChatBottom,
+                keepAlive,
+                selectedFileName, // 返回新添加的变量
+                clearSelectedFile  // 返回新添加的函数
+            }
+        }
+    })
+    app.mount('#ws-client')
+</script>
+</body>
+</html>
