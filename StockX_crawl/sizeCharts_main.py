@@ -14,8 +14,6 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 from tortoise.queryset import Q
 
-
-
 async def stockx_db_init():
     config = {
         'connections': {
