@@ -28,7 +28,6 @@ async def get_Ns_Export(sku:str):
     ns_export = Products_Export()
     await ns_export.handle(sku)
     return FileResponse('./file/ns产品查询结果.csv')
-
 @app.get('/get_orders_export')
 async def get_orders_export(order_type:str,order_id:str=None):
     orders_export = order_out()
