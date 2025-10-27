@@ -11,7 +11,6 @@ import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
-
 project_root = r"D:\Multi-Tech-Project"
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
