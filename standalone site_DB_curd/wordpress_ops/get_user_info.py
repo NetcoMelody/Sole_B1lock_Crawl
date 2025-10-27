@@ -3,13 +3,12 @@ import xmlrpc.client
 import csv
 import sys
 
-# ====== 配置区 ======
 SITE_URL = "https://soleb1ock.com/xmlrpc.php"
 USERNAME = "bigbiznb@gmail.com"
 PASSWORD = "ZEqEeFo9SbCOZHJpZ84tNjq3"
 OUTPUT_CSV = "wordpress_all_users.csv"
 PER_PAGE = 100  # 每页数量（最大建议 50~100）
-# ===================
+
 
 def main():
     print("正在连接 WordPress 站点...")
