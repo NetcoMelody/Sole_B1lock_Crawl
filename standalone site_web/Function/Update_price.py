@@ -20,7 +20,6 @@ import json
 import os
 import aiofiles
 
-
 class api_handle:
     def __init__(self, query_sku):
         ua = fake_useragent.UserAgent()
