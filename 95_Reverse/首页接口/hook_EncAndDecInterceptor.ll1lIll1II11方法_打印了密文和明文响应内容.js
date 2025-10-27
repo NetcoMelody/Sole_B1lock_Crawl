@@ -6,7 +6,7 @@ Java.perform(function () {
     const ResponseBody = Java.use("okhttp3.ResponseBody");
     const MediaType = Java.use("okhttp3.MediaType");
 
-    // 安全读取并重建 Response（避免流关闭）
+
     function readAndRebuildResponse(response) {
         if (response === null) return null;
         const body = response.body();
@@ -21,7 +21,6 @@ Java.perform(function () {
             const content = buffer.readUtf8();
             const contentType = body.contentType() ? body.contentType().toString() : null;
 
-            // 重建 Body 和 Response
             const mediaType = contentType ? MediaType.parse(contentType) : null;
             const newBody = ResponseBody.create(mediaType, content);
             const newResponse = response.newBuilder().body(newBody).build();
@@ -49,7 +48,6 @@ Java.perform(function () {
         console.log("\n" + "=".repeat(80));
         console.log("[🔄] 目标请求路径:", path);
 
-        // 🔐 第一步：手动执行 chain.proceed() 获取原始密文响应
         let rawResponse;
         try {
             rawResponse = chain.proceed(request);
@@ -58,7 +56,7 @@ Java.perform(function () {
             return highLevel.call(this, chain, request, path); // 仍走原始逻辑
         }
 
-        // 读取并重建密文响应（rawResponse 的 body 会被消费！）
+
         const { content: cipherText, newResponse: rebuiltRawResponse } = readAndRebuildResponse(rawResponse);
 
         if (cipherText !== null) {
@@ -67,7 +65,7 @@ Java.perform(function () {
             console.log("[🔐] 【完整密文响应】结束\n");
         }
 
-        // ✅ 第二步：构造 FakeChain，让原始逻辑处理 rebuiltRawResponse（未被消费）
+
         const FakeChain = Java.registerClass({
             name: 'com.shizhuang.dusanwa.FakeChain_' + Math.random().toString(36).slice(2),
             implements: [Java.use('okhttp3.Interceptor$Chain')],
@@ -87,10 +85,9 @@ Java.perform(function () {
 
         const fakeChain = FakeChain.$new();
 
-        // 执行原始解密逻辑
         const decryptedResponse = highLevel.call(this, fakeChain, request, path);
 
-        // 读取并重建明文响应（供 App 使用）
+
         const { content: plainText, newResponse: finalResponse } = readAndRebuildResponse(decryptedResponse);
 
         if (plainText !== null) {
@@ -101,7 +98,6 @@ Java.perform(function () {
 
         console.log("=".repeat(80) + "\n");
 
-        // 返回重建后的明文响应，确保 App 能正常解析
         return finalResponse || decryptedResponse;
     };
 
