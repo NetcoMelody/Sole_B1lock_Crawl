@@ -22,7 +22,6 @@ async def index():
     async with aiofiles.open('web/Tools_Site.html', mode='r', encoding='utf-8') as file:
         dom = await file.read()
     return HTMLResponse(content=dom)
-
 @app.get('/get_NS_Export')
 async def get_Ns_Export(sku:str):
     ns_export = Products_Export()
