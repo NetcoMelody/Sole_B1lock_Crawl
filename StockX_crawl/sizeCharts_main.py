@@ -305,8 +305,6 @@ async def limited_main_handle(sku,executor:ThreadPoolExecutor,captcha_event,lock
 
 
 # 批处理并发
-
-
 def chunk_list(lst, n):
     """将列表 lst 按每 n 个元素分块"""
     for i in range(0, len(lst), n):
